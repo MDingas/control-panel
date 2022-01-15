@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Mount external disk
+# Sync home directory to external disk
+# Unmount external disk
+# Power off external disk
+
+DIR_TO_BACKUP='/home/edgar'
+MOUNT_POINT='/run/media/edgar/backup-drive'
+BLOCK_DEVICE='/dev/sdb'
+BLOCK_PARTITION='/dev/sdb1'
+
+# exit on any error
+set -e
+
+udisksctl mount --filesystem-type=ext4 --block-device="${BLOCK_PARTITION}" "${MOUNT_POINT}"
+
+rsync --verbose --archive --compress "${DIR_TO_BACKUP}" "${MOUNT_POINT}/edgar/" \
+    --exclude=.aspnet/ \
+    --exclude=.azure/ \
+    --exclude=.azure-functions-core-tools/ \
+    --exclude=.azurefunctions/ \
+    --exclude=.cache/ \
+    --exclude=.cpan/ \
+    --exclude=.cpanm/ \
+    --exclude=.core/ \
+    --exclude=.keras/ \
+    --exclude=.swt/ \
+    --exclude=.mozilla/ \
+    --exclude=.npm/ \
+    --exclude=.swt/ \
+    --exclude=perl5/
+
+udisksctl unmount --block-device="${BLOCK_PARTITION}"
+
+udisksctl power-off --block-device="${BLOCK_DEVICE}"
